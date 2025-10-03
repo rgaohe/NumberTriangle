@@ -88,8 +88,15 @@ public class NumberTriangle {
      *
      */
     public int retrieve(String path) {
-        // TODO implement this method
-        return -1;
+        NumberTriangle curr = this;
+        for (char c : path.toCharArray()) {
+            if (c == 'l') {
+                curr = curr.left;
+            } else if (c == 'r') {
+                curr = curr.right;
+            }
+        }
+        return curr.root;
     }
 
     /** Read in the NumberTriangle structure from a file.
@@ -104,31 +111,30 @@ public class NumberTriangle {
      * @throws IOException may naturally occur if an issue reading the file occurs
      */
     public static NumberTriangle loadTriangle(String fname) throws IOException {
-        // open the file and get a BufferedReader object whose methods
-        // are more convenient to work with when reading the file contents.
-        InputStream inputStream = NumberTriangle.class.getClassLoader().getResourceAsStream(fname);
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        InputStream in = NumberTriangle.class.getClassLoader().getResourceAsStream(fname);
+        if (in == null) throw new IOException("File not found: " + fname);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
+        NumberTriangle root = null;
+        java.util.List<NumberTriangle> lastRow = null;
 
-        // TODO define any variables that you want to use to store things
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.trim().split("\\s+");
+            java.util.List<NumberTriangle> row = new java.util.ArrayList<>();
+            for (String p : parts) row.add(new NumberTriangle(Integer.parseInt(p)));
 
-        // will need to return the top of the NumberTriangle,
-        // so might want a variable for that.
-        NumberTriangle top = null;
-
-        String line = br.readLine();
-        while (line != null) {
-
-            // remove when done; this line is included so running starter code prints the contents of the file
-            System.out.println(line);
-
-            // TODO process the line
-
-            //read the next line
-            line = br.readLine();
+            if (root == null) root = row.get(0);
+            if (lastRow != null) {
+                for (int i = 0; i < lastRow.size(); i++) {
+                    lastRow.get(i).setLeft(row.get(i));
+                    lastRow.get(i).setRight(row.get(i + 1));
+                }
+            }
+            lastRow = row;
         }
-        br.close();
-        return top;
+        reader.close();
+        return root;
     }
 
     public static void main(String[] args) throws IOException {
